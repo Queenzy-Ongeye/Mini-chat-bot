@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omnivoltaic Documentation Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-text h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header-text p {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .topics-bar {
+            background: #f8f9fa;
+            padding: 15px 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .topic-chip {
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .topic-chip:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .topic-chip.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.bot .message-avatar {
+            background: #e9ecef;
+        }
+
+        .message-content {
+            max-width: 70%;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #212529;
+        }
+
+        .message-bubble {
+            padding: 15px 18px;
+            border-radius: 18px;
+            line-height: 1.6;
+            font-size: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-images {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message-image-container {
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .message-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+
+        .image-caption {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #6c757d;
+            background: white;
+            font-style: italic;
+        }
+
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .image-modal.active {
+            display: flex;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: 300;
+        }
+
+        .message-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .confidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .confidence-high { background: #d1fae5; color: #065f46; }
+        .confidence-medium { background: #fef3c7; color: #92400e; }
+        .confidence-low { background: #fee2e2; color: #991b1b; }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px 18px;
+            background: white;
+            border-radius: 18px;
+            width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #6c757d;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chat-input-container {
+            padding: 20px 25px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: all 0.3s;
+            max-height: 120px;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-button {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .send-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .welcome-message h2 {
+            font-size: 24px;
+            color: #212529;
+            margin-bottom: 12px;
+        }
+
+        .welcome-message p {
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .suggestion-chip {
+            padding: 10px 18px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .suggestion-chip:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .topics-bar {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-content">
+                <div class="logo">⚡</div>
+                <div class="header-text">
+                    <h1>Omnivoltaic Documentation</h1>
+                    <p>Ask me anything about our documentation</p>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+        </div>
+
+        <div class="topics-bar" id="topicsBar">
+            <div class="topic-chip" data-topic="all">All Topics</div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h2>👋 Welcome!</h2>
+                <p>I'm your documentation assistant. Ask me anything about Omnivoltaic's documentation.</p>
+                <div class="suggestion-chips">
+                    <div class="suggestion-chip" onclick="sendSuggestion('What topics are available?')">📚 Available Topics</div>
+                    <div class="suggestion-chip" onclick="sendSuggestion('How do I get started?')">🚀 Getting Started</div>
+                    <div class="suggestion-chip" onclick="sendSuggestion('Explain the architecture')">🏗️ Architecture</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <textarea 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Type your question here..."
+                    rows="1"
+                    onkeydown="handleKeyPress(event)"
+                ></textarea>
+                <button class="send-button" id="sendButton" onclick="sendMessage()">
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/chat';
+        const TOPICS_URL = 'http://localhost:5000/api/topics';
+        let selectedTopic = null;
+
+        // Auto-resize textarea
+        const chatInput = document.getElementById('chatInput');
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Load available topics
+        async function loadTopics() {
+            try {
+                const response = await fetch(TOPICS_URL);
+                const data = await response.json();
+                
+                const topicsBar = document.getElementById('topicsBar');
+                data.topics.forEach(topic => {
+                    const chip = document.createElement('div');
+                    chip.className = 'topic-chip';
+                    chip.textContent = topic;
+                    chip.dataset.topic = topic;
+                    chip.onclick = () => selectTopic(topic, chip);
+                    topicsBar.appendChild(chip);
+                });
+            } catch (error) {
+                console.error('Failed to load topics:', error);
+            }
+        }
+
+        function selectTopic(topic, element) {
+            selectedTopic = topic === 'all' ? null : topic;
+            document.querySelectorAll('.topic-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function sendSuggestion(text) {
+            chatInput.value = text;
+            sendMessage();
+        }
+
+        function addMessage(text, isUser, metadata = {}) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const welcomeMessage = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            let metaHTML = '';
+            if (!isUser && metadata.topic) {
+                const confidenceClass = metadata.confidence > 70 ? 'confidence-high' : 
+                                       metadata.confidence > 40 ? 'confidence-medium' : 
+                                       'confidence-low';
+                metaHTML = `
+                    <div class="message-meta">
+                        <span>📁 ${metadata.topic}</span>
+                        ${metadata.confidence !== undefined ? `
+                            <span class="confidence-badge ${confidenceClass}">
+                                ${metadata.confidence}% confident
+                            </span>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${isUser ? '👤' : '🤖'}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${text}</div>
+                    ${metaHTML}
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTyping() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator active">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const input = chatInput.value.trim();
+            if (!input) return;
+
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+
+            addMessage(input, true);
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+
+            showTyping();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: input,
+                        topic: selectedTopic
+                    })
+                });
+
+                const data = await response.json();
+                hideTyping();
+
+                addMessage(data.response, false, {
+                    topic: data.topic,
+                    confidence: data.confidence
+                });
+
+            } catch (error) {
+                hideTyping();
+                addMessage('Sorry, I encountered an error. Please try again.', false);
+                console.error('Error:', error);
+            } finally {
+                sendButton.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // Initialize
+        loadTopics();
+        document.querySelector('.topic-chip[data-topic="all"]').classList.add('active');
+    </script>
+</body>
+</html>
